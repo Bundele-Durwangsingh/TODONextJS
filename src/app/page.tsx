@@ -13,7 +13,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const getTask = () => {
-    let temp = localStorage.getItem("task");
+    const temp = localStorage.getItem("task");
     if (temp) {
       setTask(JSON.parse(temp));
     } else {
@@ -28,13 +28,13 @@ export default function Home() {
   const createTask = () => {
     if (!newTask.trim()) return;
 
-    let todoTask = localStorage.getItem("task");
-    let newTaskObj = {
+    const todoTask = localStorage.getItem("task");
+    const newTaskObj = {
       id: Date.now(),
       task: newTask,
     };
     
-    let updatedTasks = todoTask ? JSON.parse(todoTask) : [];
+    const updatedTasks = todoTask ? JSON.parse(todoTask) : [];
     updatedTasks.push(newTaskObj);
     localStorage.setItem("task", JSON.stringify(updatedTasks));
     setNewTask("");
@@ -42,7 +42,7 @@ export default function Home() {
   };
 
   const deleteTask = (id: number) => {
-    let updatedTasks = task.filter(todo => todo.id !== id);
+    const updatedTasks = task.filter(todo => todo.id !== id);
     localStorage.setItem("task", JSON.stringify(updatedTasks));
     setTask(updatedTasks);
   };
