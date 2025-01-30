@@ -1,21 +1,170 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(to bottom, #56ccf2, #2f80ed);
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.container {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+h1 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.add-btn {
+  background: #8e44ad;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: background 0.3s ease-in-out;
+}
+
+.add-btn:hover {
+  background: #732d91;
+}
+
+.task-list {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f2f2f2;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  transition: background 0.3s ease-in-out;
+}
+
+.task:hover {
+  background: #e0e0e0;
+}
+
+.task h2 {
+  font-size: 1rem;
+  color: #333;
+  margin: 0;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.4rem;
+  color: #e74c3c;
+  transition: color 0.3s ease-in-out;
+}
+
+.delete-btn:hover {
+  color: #c0392b;
+}
+
+.clear-all {
+  background: #8e44ad;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s ease-in-out;
+}
+
+.clear-all:hover {
+  background: #732d91;
+}
+
+.pending-tasks {
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 480px) {
+  .container {
+    width: 90%;
+    padding: 15px;
+  }
+
+  .input-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  input {
+    width: 100%;
+  }
+
+  .add-btn {
+    width: 100%;
+  }
+
+  .task {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+  }
+
+  .delete-btn {
+    align-self: flex-end;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@media (max-width: 768px) {
+  .container {
+    width: 95%;
+    padding: 18px;
+  }
+
+  input {
+    width: 95%;
+  }
+
+  .add-btn {
+    width: 100%;
+  }
+
+  .task {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+  }
+
+  .delete-btn {
+    align-self: flex-end;
+  }
 }
