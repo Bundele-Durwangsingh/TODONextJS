@@ -9,10 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "firebase": "^11.2.0",
+    "formik": "^2.4.6",
     "next": "^15.1.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "todonext": "file:"
+    "react-toastify": "^11.0.3",
+    "todonext": "file:",
+    "yup": "^1.6.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
