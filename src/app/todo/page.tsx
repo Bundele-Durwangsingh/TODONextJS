@@ -20,45 +20,47 @@ export default function Todo() {
   useEffect(() => {
     if (!loading && !user) {
       router.push("/signIn");
+      return; 
     }
   }, [user, loading, router]);
 
   const [tasks, setTasks] = useState<TodoVar[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
- 
   useEffect(() => {
-    if (!loading && user) {
-
-      document.body.style.display = 'none'; 
-      document.body.offsetHeight; 
-      document.body.style.display = ''; 
-    }
-  }, [user, loading]);
-
-  useEffect(() => {
-    const storedTasks = localStorage.getItem("task");
+    const storedTasks = localStorage.getItem("tasks");
     if (storedTasks) {
-      setTasks(JSON.parse(storedTasks));
+      try {
+        setTasks(JSON.parse(storedTasks));
+      } catch (err) {
+        console.error("Error parsing tasks:", err);
+        localStorage.removeItem("tasks");
+      }
     }
   }, []);
 
   const addTask = (task: string) => {
+    if (!task.trim()) return;
     const newTaskObj = { id: Date.now(), task };
     const updatedTasks = [...tasks, newTaskObj];
-    localStorage.setItem("task", JSON.stringify(updatedTasks));
+    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
     setTasks(updatedTasks);
   };
 
   const deleteTask = (id: number) => {
     const updatedTasks = tasks.filter(todo => todo.id !== id);
-    localStorage.setItem("task", JSON.stringify(updatedTasks));
+    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
     setTasks(updatedTasks);
   };
 
   const clearAllTasks = () => {
-    localStorage.removeItem("task");
+    localStorage.removeItem("tasks");
     setTasks([]);
+  };
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.push("/signIn");
   };
 
   const filteredTasks = tasks.filter(todo =>
@@ -89,7 +91,7 @@ export default function Todo() {
           Clear All
         </button>
       )}
-      <button className="logOut" onClick={() => signOut(auth)}>Log Out</button>
+      <button className="logOut" onClick={handleSignOut}>Log Out</button>
     </div>
   );
 }
