@@ -17,7 +17,6 @@ export default function Todo() {
   const [user, loading] = useAuthState(auth);
   const router = useRouter();
 
-  // Use `useEffect` to handle redirection and layout fix after loading
   useEffect(() => {
     if (!loading && !user) {
       router.push("/signIn");
@@ -27,13 +26,13 @@ export default function Todo() {
   const [tasks, setTasks] = useState<TodoVar[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Use another `useEffect` to trigger layout refresh after the user signs in
+ 
   useEffect(() => {
     if (!loading && user) {
-      // Force a layout reflow to fix any layout issues when signing in
-      document.body.style.display = 'none'; // Temporarily hide the body
-      document.body.offsetHeight; // Trigger a reflow
-      document.body.style.display = ''; // Show the body again
+
+      document.body.style.display = 'none'; 
+      document.body.offsetHeight; 
+      document.body.style.display = ''; 
     }
   }, [user, loading]);
 

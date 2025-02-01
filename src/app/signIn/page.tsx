@@ -12,7 +12,7 @@ const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const [signIn, user, loading, error] = useSignInWithEmailAndPassword(auth);
+  const [signIn] = useSignInWithEmailAndPassword(auth);
   const router = useRouter();
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {

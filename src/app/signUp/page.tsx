@@ -18,7 +18,6 @@ const SignUp = () => {
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Validate email and password
     if (!email.includes('@')) {
       toast.error("Please enter a valid email address.");
       return;

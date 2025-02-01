@@ -183,18 +183,18 @@ input {
   position: absolute;
   top: 20px;
   right: 20px;
-  background-color: #ff4d4d;  /* Red background */
+  background-color: #ff4d4d;  
   color: white;
   border: none;
-  padding: 12px 24px;  /* Medium size */
-  font-size: 16px;      /* Adjust font size */
+  padding: 12px 24px;  
+  font-size: 16px;      
   cursor: pointer;
   border-radius: 5px;
   transition: background-color 0.3s ease;
 }
 
 .logOut:hover {
-  background-color: #e60000;  /* Darker red on hover */
+  background-color: #e60000;  
 }
 
 
