@@ -19,7 +19,6 @@ export default function TaskForm({ addTask }: TaskFormProps) {
         .min(6, "Task must be at least 6 characters long")
         .max(255, "Task must be under 255 characters")
         .matches(/^[a-zA-Z0-9 ]*$/, "No special characters allowed")
-        .required("Task cannot be empty"),
     }),
     onSubmit: (values, { resetForm }) => {
       if (!values.newTask.trim()) return; 
