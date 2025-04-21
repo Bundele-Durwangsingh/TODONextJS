@@ -12,45 +12,97 @@ interface TodoUpdateData {
   status?: boolean;
 }
 
-// Create axios instance pointing to our local API proxy instead of the direct API
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+interface AuthResponse {
+  message: string;
+  token: string;
+}
+
+interface UserProfile {
+  message: string;
+  user: {
+    uid: string;
+    email: string;
+  };
+}
+
+// Create API instance
 const api = axios.create({
-  // Use relative URL to the Next.js API routes (not the external API)
-  baseURL: '/api'
+  baseURL: 'https://todo-list-r2os.onrender.com'
 });
 
+// Add request interceptor to attach auth token to requests
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Helper to handle authentication
+export const authService = {
+  login: async (credentials: LoginCredentials) => {
+    const response = await api.post<AuthResponse>('/auth/login', credentials);
+    localStorage.setItem('token', response.data.token);
+    return response.data;
+  },
+  
+  signup: async (credentials: LoginCredentials) => {
+    const response = await api.post<AuthResponse>('/auth/signup', credentials);
+    localStorage.setItem('token', response.data.token);
+    return response.data;
+  },
+  
+  logout: () => {
+    localStorage.removeItem('token');
+  },
+  
+  getProfile: () => {
+    return api.get<UserProfile>('/auth/profile');
+  },
+  
+  isAuthenticated: () => {
+    return !!localStorage.getItem('token');
+  }
+};
+
+// Todo service functions
 export const getAllTodosService = (
   status?: boolean,
   title?: string,
-  limit: number = 1000
 ) => {
-  let query = '';
+  const queryParams = new URLSearchParams();
   
   if (status !== undefined) {
-    query += `status=${status}&`;
+    queryParams.append('status', String(status));
   }
   
   if (title) {
-    query += `title=${title}&`;
+    queryParams.append('title', title);
   }
   
-  if (limit) {
-    query += `limit=${limit}`;
-  }
+  const queryString = queryParams.toString();
   
-  query = query.endsWith('&') ? query.slice(0, -1) : query;
-  
-  return api.get<Todo[]>(`/todo${query ? '?' + query : ''}`);
+  return api.get<Todo[] | { data: Todo[] } | { todos: Todo[] }>(`/todo${queryString ? '?' + queryString : ''}`);
 };
 
 export const createTodoService = (title: string, status: boolean = false) => {
-  return api.post<{ message: string; todo: Todo }>('/todo', {
+  return api.post<{ message: string; todo: Todo } | Todo>('/todo', {
     title: title,
     status: status
   });
 };
 
 export const updateTodoService = (id: string | number, data: TodoUpdateData) => {
-  return api.put<{ message: string; todo: Todo }>(`/todo/${id}`, data);
+  return api.put<{ message: string; todo: Todo } | Todo>(`/todo/${id}`, data);
 };
 
 export const deleteTodoService = (id: string | number) => {

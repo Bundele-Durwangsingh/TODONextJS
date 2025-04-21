@@ -4,45 +4,50 @@ import Button from "@mui/material/Button";
 import { Email } from '@mui/icons-material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useState } from "react";
-import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
-import { auth } from '@/app/firebase/config';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import "./SignIn.css";
+import { authService } from '@/services/api';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [signIn] = useSignInWithEmailAndPassword(auth);
   const router = useRouter();
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
-      const res = await signIn(email, password);
-      if (!res) {
-        toast.error("Invalid credentials. Please try again.");
-        return;
-      }
-      console.log(res);
+      await authService.login({ email, password });
+      toast.success("Sign in successful!");
       setEmail('');
       setPassword('');
       router.push('/todo');
-    } catch (err) {
-      toast.error("An error occurred. Please try again.");
-      console.log(err);
+    } catch (error: unknown) {
+      console.error("Login error:", error);
+
+      let errorMessage = "Invalid credentials. Please try again.";
+      if (typeof error === 'object' && error !== null && 'response' in error) {
+        const err = error as { response?: { data?: { message?: string } } };
+        errorMessage = err.response?.data?.message || errorMessage;
+      }
+
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
-
-const handleClickShowPassword = () => setShowPassword((prev) => !prev);
-const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
-  event.preventDefault();
-};
+  const handleClickShowPassword = () => setShowPassword((prev) => !prev);
+  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
 
   return (
     <div className="signin-container">
@@ -51,60 +56,61 @@ const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => 
         <div className="input-group">
           <label>Email:</label>
           <TextField
-  type="email"
-  name="email"
-  value={email}
-  onChange={(e) => setEmail(e.target.value)}
-  required
-  variant="filled"
-  InputProps={{
-    endAdornment: (
-      <InputAdornment position="end">
-        <IconButton>
-          <Email />
-        </IconButton>
-      </InputAdornment>
-    ),
-  }}
-/>
+            type="email"
+            name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            variant="filled"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton>
+                    <Email />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
         </div>
         <div className="input-group">
           <label>Password:</label>
           <TextField
-  type={showPassword ? 'text' : 'password'}
-  name="password"
-  value={password}
-  onChange={(e) => setPassword(e.target.value)}
-  required
-  variant="filled"
-  InputProps={{
-    endAdornment: (
-      <InputAdornment position="end">
-        <IconButton
-          aria-label={showPassword ? 'hide the password' : 'display the password'}
-          onClick={handleClickShowPassword}
-          onMouseDown={handleMouseDownPassword}
-        >
-          {showPassword ? <VisibilityOff /> : <Visibility />}
-        </IconButton>
-      </InputAdornment>
-    ),
-  }}
-/>
+            type={showPassword ? 'text' : 'password'}
+            name="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            variant="filled"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label={showPassword ? 'hide the password' : 'display the password'}
+                    onClick={handleClickShowPassword}
+                    onMouseDown={handleMouseDownPassword}
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
         </div>
         <Button
-  type="submit"
-  variant="outlined"
-  color="primary"
-  sx={{
-    '&:hover': {
-      backgroundColor: 'primary.main',
-      color: 'white',
-    },
-  }}
->
-  Sign In
-</Button>
+          type="submit"
+          variant="outlined"
+          color="primary"
+          disabled={loading}
+          sx={{
+            '&:hover': {
+              backgroundColor: 'primary.main',
+              color: 'white',
+            },
+          }}
+        >
+          {loading ? 'Signing In...' : 'Sign In'}
+        </Button>
 
         <p className="signup-link">
           New user? <Link href="/signUp">Sign up instead</Link>

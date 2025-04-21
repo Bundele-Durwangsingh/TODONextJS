@@ -19,7 +19,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const url = `${API_URL}${queryString ? '?' + queryString : ''}`;
       
       const response = await axios.get(url);
-      return res.status(200).json(response.data);
+      
+      // Ensure we return an array even if the API structure is inconsistent
+      let data = response.data;
+      if (!Array.isArray(data)) {
+        // If data is not an array, check common patterns
+        data = data.todos || data.data || data.items;
+        
+        // If still not an array, convert if possible
+        if (!Array.isArray(data) && data && typeof data === 'object') {
+          data = Object.values(data);
+        }
+        
+        // Final fallback to empty array
+        if (!Array.isArray(data)) {
+          data = [];
+        }
+      }
+      
+      return res.status(200).json(data);
     }
     
     // Handle POST requests (creating todos)
