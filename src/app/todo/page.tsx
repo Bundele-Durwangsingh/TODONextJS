@@ -13,8 +13,9 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import TaskForm from "../components/TaskForm";
 import TaskList from "../components/TaskList";
-import { createTodoService, getAllTodosService, updateTodoService } from "@/services/api";
+import { createTodoService, getAllTodosService, updateTodoService, authService } from "@/services/api";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 interface Todo {
   id: string | number;
@@ -31,25 +32,37 @@ export default function Todo() {
 
   // Fetch tasks on component mount
   useEffect(() => {
+    // Check if user is authenticated
+    if (!authService.isAuthenticated()) {
+      toast.error("Please login to continue");
+      router.push("/signIn");
+      return;
+    }
+    
     fetchTasks();
-  }, []);
+  }, [router]);
 
   const fetchTasks = async () => {
     try {
       setLoading(true);
       console.log('Fetching tasks...');
-      // Pass false to only get tasks with status=false (incomplete tasks)
+      // Only get incomplete tasks (status=false)
       const response = await getAllTodosService(false);
-      console.log('Response received:', response);
       
+      // Get the tasks array from the response
       const tasksData = response.data;
       
-      console.log('Tasks data to be set:', tasksData);
+      console.log('Tasks data:', tasksData);
       setTasks(Array.isArray(tasksData) ? tasksData : []);
       
     } catch (error) {
       console.error("Error fetching tasks:", error);
       toast.error("Failed to load tasks");
+      // If unauthorized, redirect to login
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        authService.logout();
+        router.push("/signIn");
+      }
       setTasks([]);
     } finally {
       setLoading(false);
@@ -63,22 +76,8 @@ export default function Todo() {
       const response = await createTodoService(title);
       console.log("Create todo response:", response);
       
-      // Handle different possible response formats
-      let newTodo: Todo;
-      
-      if (response.data && typeof response.data === 'object') {
-        if ('todo' in response.data && response.data.todo) {
-          // Case: { message: string, todo: Todo }
-          newTodo = response.data.todo as Todo;
-        } else if ('id' in response.data && 'title' in response.data && 'status' in response.data) {
-          // Case: direct Todo object
-          newTodo = response.data as Todo;
-        } else {
-          throw new Error("Unexpected response format");
-        }
-      } else {
-        throw new Error("Invalid response data");
-      }
+      // Extract the new todo from the response
+      const newTodo = response.data.todo;
       
       setTasks(prevTasks => [...prevTasks, newTodo]);
       toast.success("Task successfully added");
@@ -91,12 +90,14 @@ export default function Todo() {
   const editTask = async (id: number | string, newTitle: string) => {
     try {
       // Update the task title
-      await updateTodoService(id, { title: newTitle });
+      const response = await updateTodoService(id, { title: newTitle });
       
-      // Update the UI
+      // Update the UI with the returned updated todo
+      const updatedTodo = response.data.todo;
+      
       setTasks(prevTasks => 
         prevTasks.map(task => 
-          task.id === id ? { ...task, title: newTitle } : task
+          task.id === id ? updatedTodo : task
         )
       );
       toast.success("Task updated successfully");
@@ -108,15 +109,15 @@ export default function Todo() {
 
   const deleteTask = async (id: number | string) => {
     try {
-      // Update the task status to true (completed/hidden)
+      // Mark as completed (status=true) rather than deleting
       await updateTodoService(id, { status: true });
       
       // Remove from UI
       setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
       toast.info("Task marked as completed");
     } catch (error) {
-      console.error("Error updating task:", error);
-      toast.error("Failed to update task");
+      console.error("Error marking task as completed:", error);
+      toast.error("Failed to complete task");
     }
   };
 
@@ -141,16 +142,15 @@ export default function Todo() {
   // Handle logout functionality
   const handleLogout = () => {
     try {
-      // Clear authentication tokens from localStorage
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      // Clear authentication tokens
+      authService.logout();
       
       // Show success message
       toast.success("Logged out successfully");
       
       // Redirect to login page
       setTimeout(() => {
-        router.push("/");
+        router.push("/signIn");
       }, 1000);
     } catch (error) {
       console.error("Error during logout:", error);

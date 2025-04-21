@@ -4,7 +4,9 @@ interface Todo {
   id: string | number;
   title: string;
   status: boolean;
+  userId?: number;
   createdAt?: Date | string;
+  updatedAt?: Date | string;
 }
 
 interface TodoUpdateData {
@@ -25,12 +27,11 @@ interface AuthResponse {
 interface UserProfile {
   message: string;
   user: {
-    uid: string;
+    uid: string | number;
     email: string;
   };
 }
 
-// Create API instance
 const api = axios.create({
   baseURL: 'https://todo-list-r2os.onrender.com'
 });
@@ -74,35 +75,26 @@ export const authService = {
   }
 };
 
-// Todo service functions
-export const getAllTodosService = (
-  status?: boolean,
-  title?: string,
-) => {
+export const getAllTodosService = (statusFilter?: boolean) => {
   const queryParams = new URLSearchParams();
   
-  if (status !== undefined) {
-    queryParams.append('status', String(status));
-  }
-  
-  if (title) {
-    queryParams.append('title', title);
+  if (statusFilter !== undefined) {
+    queryParams.append('status', String(statusFilter));
   }
   
   const queryString = queryParams.toString();
-  
-  return api.get<Todo[] | { data: Todo[] } | { todos: Todo[] }>(`/todo${queryString ? '?' + queryString : ''}`);
+  return api.get<Todo[]>(`/todo${queryString ? '?' + queryString : ''}`);
 };
 
 export const createTodoService = (title: string, status: boolean = false) => {
-  return api.post<{ message: string; todo: Todo } | Todo>('/todo', {
-    title: title,
-    status: status
+  return api.post<{ message: string; todo: Todo }>('/todo', {
+    title,
+    status
   });
 };
 
 export const updateTodoService = (id: string | number, data: TodoUpdateData) => {
-  return api.put<{ message: string; todo: Todo } | Todo>(`/todo/${id}`, data);
+  return api.put<{ message: string; todo: Todo }>(`/todo/${id}`, data);
 };
 
 export const deleteTodoService = (id: string | number) => {
