@@ -14,8 +14,8 @@ interface TodoUpdateData {
 
 // Create axios instance pointing to our local API proxy instead of the direct API
 const api = axios.create({
-  // Use relative URL to the Next.js API routes
-  baseURL: 'https://todo-list-r2os.onrender.com'
+  // Use relative URL to the Next.js API routes (not the external API)
+  baseURL: '/api'
 });
 
 export const getAllTodosService = (

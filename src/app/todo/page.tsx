@@ -26,19 +26,22 @@ export default function Todo() {
     fetchTasks();
   }, []);
 
-  const fetchTasks = async () => {
-    try {
-      setLoading(true);
-      // Only fetch tasks with status=false (active tasks)
-      const response = await getAllTodosService(false);
-      setTasks(response.data);
-    } catch (error) {
-      console.error("Error fetching tasks:", error);
-      toast.error("Failed to load tasks");
-    } finally {
-      setLoading(false);
-    }
-  };
+ // Inside the fetchTasks function
+const fetchTasks = async () => {
+  try {
+    setLoading(true);
+    console.log('Fetching tasks...');
+    // Only fetch tasks with status=false (active tasks)
+    const response = await getAllTodosService(false);
+    console.log('Tasks fetched successfully:', response.data);
+    setTasks(response.data);
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    toast.error("Failed to load tasks");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const addTask = async (title: string) => {
     if (!title.trim()) return;

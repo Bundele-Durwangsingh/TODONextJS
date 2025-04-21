@@ -1,6 +1,6 @@
 // File: pages/api/todo/index.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 
 const API_URL = 'https://todo-list-r2os.onrender.com/todo';
 
@@ -32,15 +32,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     else {
       return res.status(405).json({ message: 'Method not allowed' });
     }
-  } catch (error: unknown) {
+  } catch (error) {
     console.error('API proxy error:', error);
     
     // Type guard to check if error is an AxiosError
     if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError;
-      return res.status(axiosError.response?.status || 500).json({ 
-        message: axiosError.message,
-        details: axiosError.response?.data || 'Internal server error'
+      return res.status(error.response?.status || 500).json({ 
+        message: error.message,
+        details: error.response?.data || 'Internal server error'
       });
     }
     
