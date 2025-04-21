@@ -1,8 +1,9 @@
 "use client";
-
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { toast } from "react-toastify";
+
 import "react-toastify/dist/ReactToastify.css";
 
 interface TaskFormProps {
@@ -23,10 +24,7 @@ export default function TaskForm({ addTask }: TaskFormProps) {
     onSubmit: (values, { resetForm }) => {
       if (!values.newTask.trim()) return; 
       addTask(values.newTask);
-      toast.success("Task successfully added", {
-        position: "top-right",
-        autoClose: 2000,
-      });
+      // Toast is now handled in the parent component
       resetForm();
     },
   });
@@ -35,26 +33,36 @@ export default function TaskForm({ addTask }: TaskFormProps) {
     <>
       <form onSubmit={formik.handleSubmit} className="input-container">
         <div className="input-wrapper">
-          <input
-            type="text"
+          <TextField
+            id="filled-suffix-shrink"
             name="newTask"
-            placeholder="Enter your task"
+            label="Enter your task"
+            variant="filled"
             value={formik.values.newTask}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            className="task-input"
+            error={formik.touched.newTask && Boolean(formik.errors.newTask)}
+            helperText={formik.touched.newTask && formik.errors.newTask}
           />
+
           {formik.touched.newTask && formik.errors.newTask && (
             <p className="error-message">{formik.errors.newTask}</p>
           )}
         </div>
-        <button 
-          type="submit" 
-          className="add-btn" 
+        <Button 
+          type="submit"
+          variant="contained" 
+          color="success"
           disabled={!formik.isValid || !formik.values.newTask.trim()}
+          sx={{
+            '&:hover': {
+              backgroundColor: 'success.dark', 
+              color: 'white', 
+            },
+          }}
         >
           +
-        </button>
+        </Button>
       </form>
     </>
   );

@@ -9,6 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@fontsource/roboto": "^5.1.1",
+    "@mui/icons-material": "^6.4.2",
+    "@mui/material": "^6.4.2",
+    "@mui/styled-engine-sc": "^6.4.2",
+    "axios": "^1.8.4",
     "firebase": "^11.2.0",
     "formik": "^2.4.6",
     "next": "^15.1.6",
@@ -16,6 +23,7 @@
     "react-dom": "^19.0.0",
     "react-firebase-hooks": "^5.1.1",
     "react-toastify": "^11.0.3",
+    "styled-components": "^6.1.14",
     "todonext": "file:",
     "yup": "^1.6.1"
   },

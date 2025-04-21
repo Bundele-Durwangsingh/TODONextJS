@@ -1,13 +1,19 @@
 "use client";
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from "@mui/icons-material/Delete";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
 
-interface TodoVar {
-  task: string;
-  id: number;
+interface Todo {
+  id: string | number;
+  title: string;
+  status: boolean;
+  createdAt?: Date | string;
 }
 
 interface TaskListProps {
-  tasks: TodoVar[];
-  deleteTask: (id: number) => void;
+  tasks: Todo[];
+  deleteTask: (id: number | string) => void;
 }
 
 export default function TaskList({ tasks, deleteTask }: TaskListProps) {
@@ -16,10 +22,25 @@ export default function TaskList({ tasks, deleteTask }: TaskListProps) {
       {tasks.length > 0 ? (
         tasks.map((todo) => (
           <div key={todo.id} className="task">
-            <h2>{todo.task}</h2>
-            <button className="delete-btn" onClick={() => deleteTask(todo.id)}>
-              🗑
-            </button>
+            <ListItem>
+              <ListItemText 
+                primary={todo.title} 
+              />
+            </ListItem>
+            <IconButton 
+              aria-label="delete" 
+              size="large" 
+              onClick={() => deleteTask(todo.id)}
+              color="error"
+              sx={{
+                '&:hover': {
+                  backgroundColor: 'error.main',
+                  color: 'white', 
+                },
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
           </div>
         ))
       ) : (

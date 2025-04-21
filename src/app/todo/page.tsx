@@ -1,70 +1,91 @@
 "use client";
-
 import { useEffect, useState } from "react";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import TaskForm from "../components/TaskForm";
 import TaskList from "../components/TaskList";
-import { signOut } from "firebase/auth";
-import { auth } from "../firebase/config";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { useRouter } from "next/navigation";
+import { createTodoService, getAllTodosService, updateTodoService } from "@/services/api";
 
-interface TodoVar {
-  task: string;
-  id: number;
+
+interface Todo {
+  id: string | number;
+  title: string;
+  status: boolean;
+  createdAt?: Date | string;
 }
 
 export default function Todo() {
-  const [user, loading] = useAuthState(auth);
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/signIn");
-      return; 
-    }
-  }, [user, loading, router]);
-
-  const [tasks, setTasks] = useState<TodoVar[]>([]);
+  const [tasks, setTasks] = useState<Todo[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
 
+  // Fetch tasks on component mount
   useEffect(() => {
-    const storedTasks = localStorage.getItem("tasks");
-    if (storedTasks) {
-      try {
-        setTasks(JSON.parse(storedTasks));
-      } catch (err) {
-        console.error("Error parsing tasks:", err);
-        localStorage.removeItem("tasks");
-      }
-    }
+    fetchTasks();
   }, []);
 
-  const addTask = (task: string) => {
-    if (!task.trim()) return;
-    const newTaskObj = { id: Date.now(), task };
-    const updatedTasks = [...tasks, newTaskObj];
-    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
-    setTasks(updatedTasks);
+  const fetchTasks = async () => {
+    try {
+      setLoading(true);
+      // Only fetch tasks with status=false (active tasks)
+      const response = await getAllTodosService(false);
+      setTasks(response.data);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+      toast.error("Failed to load tasks");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const deleteTask = (id: number) => {
-    const updatedTasks = tasks.filter(todo => todo.id !== id);
-    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
-    setTasks(updatedTasks);
+  const addTask = async (title: string) => {
+    if (!title.trim()) return;
+    
+    try {
+      const response = await createTodoService(title);
+      setTasks([...tasks, response.data.todo]);
+      toast.success("Task successfully added");
+    } catch (error) {
+      console.error("Error adding task:", error);
+      toast.error("Failed to add task");
+    }
   };
 
-  const clearAllTasks = () => {
-    localStorage.removeItem("tasks");
-    setTasks([]);
+  // Instead of deleting, update status to false
+  const deleteTask = async (id: number | string) => {
+    try {
+      // Update the task status to true (completed/hidden)
+      await updateTodoService(id, { status: true });
+      
+      // Remove from UI
+      setTasks(tasks.filter(task => task.id !== id));
+      toast.info("Task marked as completed");
+    } catch (error) {
+      console.error("Error updating task:", error);
+      toast.error("Failed to update task");
+    }
   };
 
-  const handleSignOut = async () => {
-    await signOut(auth);
-    router.push("/signIn");
+  const clearAllTasks = async () => {
+    try {
+      // Mark all tasks as completed (status: true)
+      const updatePromises = tasks.map(task => 
+        updateTodoService(task.id, { status: true })
+      );
+      await Promise.all(updatePromises);
+      
+      setTasks([]);
+      toast.info("All tasks marked as completed");
+    } catch (error) {
+      console.error("Error clearing tasks:", error);
+      toast.error("Failed to clear tasks");
+    }
   };
 
   const filteredTasks = tasks.filter(todo =>
-    todo.task.toLowerCase().includes(searchQuery.toLowerCase())
+    todo.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -74,7 +95,11 @@ export default function Todo() {
       <TaskForm addTask={addTask} />
 
       <div className="search-container">
-        <input
+        <TextField
+          id="filled-suffix-shrink"
+          name="searchTask"
+          label="Search tasks"
+          variant="filled"
           type="text"
           placeholder="Search tasks..."
           value={searchQuery}
@@ -84,14 +109,29 @@ export default function Todo() {
 
       <hr />
 
-      <TaskList tasks={filteredTasks} deleteTask={deleteTask} />
+      {loading ? (
+        <p>Loading tasks...</p>
+      ) : (
+        <TaskList tasks={filteredTasks} deleteTask={deleteTask} />
+      )}
 
       {tasks.length > 0 && (
-        <button className="clear-all" onClick={clearAllTasks}>
+        <Button
+          variant="outlined"
+          color="error"
+          onClick={clearAllTasks}
+          sx={{
+            '&:hover': {
+              backgroundColor: 'error.main',
+              color: 'white',
+            },
+          }}
+        >
           Clear All
-        </button>
+        </Button>
       )}
-      <button className="logOut" onClick={handleSignOut}>Log Out</button>
+      
+      <ToastContainer position="top-right" autoClose={2000} />
     </div>
   );
 }
